@@ -1,4 +1,17 @@
 
+-- Sequences for unique ID generation
+CREATE SEQUENCE VENDOR_SEQ
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+CREATE SEQUENCE VENDOR_USER_SEQ
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
 create table VENDOR
 (
     VENDOR_ID        NUMBER not null
@@ -13,6 +26,7 @@ create table VENDOR
     PRODUCT          VARCHAR2(100),
     MAX_NORMAL_USERS NUMBER,
     MAX_ADMIN_USERS  NUMBER,
+    STATUS           VARCHAR2(20),
     CREATED_BY       VARCHAR2(50),
     APPROVED_BY      VARCHAR2(50),
     CREATED_TIME     TIMESTAMP(6) default CURRENT_TIMESTAMP,
@@ -74,6 +88,7 @@ CREATE TABLE VENDOR_AUDIT
     PRODUCT          VARCHAR2(100),
     MAX_NORMAL_USERS NUMBER,
     MAX_ADMIN_USERS  NUMBER,
+    STATUS           VARCHAR2(20),
     CREATED_BY       VARCHAR2(50),
     APPROVED_BY      VARCHAR2(50),
     CREATED_TIME     TIMESTAMP(6),
@@ -100,6 +115,7 @@ BEGIN
             PRODUCT,
             MAX_NORMAL_USERS,
             MAX_ADMIN_USERS,
+            STATUS,
             CREATED_BY,
             APPROVED_BY,
             CREATED_TIME,
@@ -117,6 +133,7 @@ BEGIN
                      :OLD.PRODUCT,
                      :OLD.MAX_NORMAL_USERS,
                      :OLD.MAX_ADMIN_USERS,
+                     :OLD.STATUS,
                      :OLD.CREATED_BY,
                      :OLD.APPROVED_BY,
                      :OLD.CREATED_TIME,
@@ -137,6 +154,7 @@ END IF;
             PRODUCT,
             MAX_NORMAL_USERS,
             MAX_ADMIN_USERS,
+            STATUS,
             CREATED_BY,
             APPROVED_BY,
             CREATED_TIME,
@@ -154,6 +172,7 @@ END IF;
                      :OLD.PRODUCT,
                      :OLD.MAX_NORMAL_USERS,
                      :OLD.MAX_ADMIN_USERS,
+                     :OLD.STATUS,
                      :OLD.CREATED_BY,
                      :OLD.APPROVED_BY,
                      :OLD.CREATED_TIME,
