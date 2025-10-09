@@ -1,0 +1,148 @@
+sequenceDiagram
+  actor user as SB User
+  participant sb as Service Bench
+  participant exp as Experience API
+  participant wrapper as Wrapper Process API
+  participant vm as Vendor Master API
+  participant db as Oracle DB
+
+  Note over sb, vm: Vendor CRUD Operations
+
+  Note right of sb: Create Vendor Flow
+  user ->> sb: Create Vendor Request
+  sb ->> exp: POST /vendors
+  exp ->> wrapper: POST /vendors
+  wrapper ->> vm: PUT /api/vendor-master/vendors
+  vm ->> db: INSERT INTO VENDOR
+  db -->> vm: Vendor Created
+  vm -->> wrapper: 201 Created VendorResponse
+  wrapper -->> exp: 201 Created
+  exp -->> sb: 201 Created
+  sb -->> user: Success Message
+  alt Create fails
+    vm -->> sb: Error 102 unable to create
+  end
+
+  Note right of sb: Update Vendor Flow
+  user ->> sb: Update Vendor Request
+  sb ->> exp: PUT /vendors
+  exp ->> wrapper: PUT /vendors
+  wrapper ->> vm: POST /api/vendor-master/vendors
+  vm ->> db: SELECT FROM VENDOR WHERE VENDOR_CODE
+  db -->> vm: Existing Vendor Data
+  vm ->> db: INSERT INTO VENDOR_AUDIT event_type update
+  vm ->> db: UPDATE VENDOR
+  db -->> vm: Vendor Updated
+  vm -->> wrapper: 200 OK VendorResponse
+  wrapper -->> exp: 200 OK
+  exp -->> sb: 200 OK
+  sb -->> user: Success Message
+  alt Update fails
+    vm -->> sb: Error 101 unable to update
+  end
+
+  Note right of sb: Get Vendor by Code Flow
+  user ->> sb: Get Vendor Request
+  sb ->> exp: GET /vendors?vendorCode
+  exp ->> wrapper: GET /vendors?vendorCode
+  wrapper ->> vm: GET /api/vendor-master/vendors?vendorCode
+  vm ->> db: SELECT FROM VENDOR WHERE VENDOR_CODE
+  db -->> vm: Vendor Data
+  vm -->> wrapper: 200 OK VendorResponse
+  wrapper -->> exp: 200 OK
+  exp -->> sb: 200 OK
+  sb -->> user: Display Vendor Details
+  alt Vendor not found
+    vm -->> sb: 404 Not Found
+  end
+
+  Note right of sb: Delete Vendor Flow
+  user ->> sb: Delete Vendor Request
+  sb ->> exp: DELETE /vendors?vendorCode
+  exp ->> wrapper: DELETE /vendors?vendorCode
+  wrapper ->> vm: DELETE /api/vendor-master/vendors?vendorCode
+  vm ->> db: SELECT FROM VENDOR WHERE VENDOR_CODE
+  db -->> vm: Existing Vendor Data
+  vm ->> db: INSERT INTO VENDOR_AUDIT event_type delete
+  vm ->> db: DELETE FROM VENDOR
+  db -->> vm: Vendor Deleted
+  vm -->> wrapper: 204 No Content
+  wrapper -->> exp: 204 No Content
+  exp -->> sb: 204 No Content
+  sb -->> user: Success Message
+  alt Delete fails
+    vm -->> sb: 404 Not Found
+  end
+
+  Note over sb, vm: Vendor User CRUD Operations
+
+  Note right of sb: Create Vendor User Flow
+  user ->> sb: Create Vendor User Request
+  sb ->> exp: POST /vendor-users
+  exp ->> wrapper: POST /vendor-users
+  wrapper ->> vm: PUT /api/vendor-master/vendor-users
+  vm ->> db: SELECT FROM VENDOR WHERE VENDOR_CODE
+  vm ->> db: COUNT users by role
+  alt Max users reached
+    vm -->> sb: Error 105 users are reached maximum
+  end
+  vm ->> db: INSERT INTO VENDOR_USER
+  db -->> vm: Vendor User Created
+  vm -->> wrapper: 201 Created VendorUserResponse
+  wrapper -->> exp: 201 Created
+  exp -->> sb: 201 Created
+  sb -->> user: Success Message
+  alt Create fails
+    vm -->> sb: Error 103 unable to create
+  end
+
+  Note right of sb: Update Vendor User Flow
+  user ->> sb: Update Vendor User Request
+  sb ->> exp: PUT /vendor-users
+  exp ->> wrapper: PUT /vendor-users
+  wrapper ->> vm: POST /api/vendor-master/vendor-users
+  vm ->> db: SELECT FROM VENDOR_USER WHERE VENDOR_USER_ID
+  db -->> vm: Existing Vendor User Data
+  vm ->> db: INSERT INTO VENDOR_USER_AUDIT event_type update
+  vm ->> db: UPDATE VENDOR_USER
+  db -->> vm: Vendor User Updated
+  vm -->> wrapper: 200 OK VendorUserResponse
+  wrapper -->> exp: 200 OK
+  exp -->> sb: 200 OK
+  sb -->> user: Success Message
+  alt Update fails
+    vm -->> sb: Error 104 unable to update
+  end
+
+  Note right of sb: Get Vendor User by ID Flow
+  user ->> sb: Get Vendor User Request
+  sb ->> exp: GET /vendor-users?vendorUserId
+  exp ->> wrapper: GET /vendor-users?vendorUserId
+  wrapper ->> vm: GET /api/vendor-master/vendor-users?vendorUserId
+  vm ->> db: SELECT FROM VENDOR_USER WHERE VENDOR_USER_ID
+  db -->> vm: Vendor User Data
+  vm -->> wrapper: 200 OK VendorUserResponse
+  wrapper -->> exp: 200 OK
+  exp -->> sb: 200 OK
+  sb -->> user: Display Vendor User Details
+  alt Vendor User not found
+    vm -->> sb: 404 Not Found
+  end
+
+  Note right of sb: Delete Vendor User Flow
+  user ->> sb: Delete Vendor User Request
+  sb ->> exp: DELETE /vendor-users?vendorUserId
+  exp ->> wrapper: DELETE /vendor-users?vendorUserId
+  wrapper ->> vm: DELETE /api/vendor-master/vendor-users?vendorUserId
+  vm ->> db: SELECT FROM VENDOR_USER WHERE VENDOR_USER_ID
+  db -->> vm: Existing Vendor User Data
+  vm ->> db: INSERT INTO VENDOR_USER_AUDIT event_type delete
+  vm ->> db: DELETE FROM VENDOR_USER
+  db -->> vm: Vendor User Deleted
+  vm -->> wrapper: 204 No Content
+  wrapper -->> exp: 204 No Content
+  exp -->> sb: 204 No Content
+  sb -->> user: Success Message
+  alt Delete fails
+    vm -->> sb: Error 107 unable to delete
+  end

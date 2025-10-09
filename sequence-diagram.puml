@@ -1,0 +1,92 @@
+@startuml Vendor Master API Invocation Flow
+
+participant "Service Bench" as ServiceBench
+participant "Experience API" as ExperienceAPI
+participant "Wrapper Process API" as WrapperAPI
+participant "Vendor Master API" as VendorMaster
+
+== Create Vendor ==
+ServiceBench -> ExperienceAPI: POST /vendors
+ExperienceAPI -> WrapperAPI: POST /vendors
+WrapperAPI -> VendorMaster: PUT /api/vendor-master/vendors
+VendorMaster --> WrapperAPI: 201 Created (VendorResponse)
+WrapperAPI --> ExperienceAPI: 201 Created
+ExperienceAPI --> ServiceBench: 201 Created
+
+== Update Vendor ==
+ServiceBench -> ExperienceAPI: PUT /vendors
+ExperienceAPI -> WrapperAPI: PUT /vendors
+WrapperAPI -> VendorMaster: POST /api/vendor-master/vendors
+note right: Audit logged before update
+VendorMaster --> WrapperAPI: 200 OK (VendorResponse)
+WrapperAPI --> ExperienceAPI: 200 OK
+ExperienceAPI --> ServiceBench: 200 OK
+
+== Get All Vendors ==
+ServiceBench -> ExperienceAPI: GET /vendors
+ExperienceAPI -> WrapperAPI: GET /vendors
+WrapperAPI -> VendorMaster: GET /api/vendor-master/vendors
+VendorMaster --> WrapperAPI: 200 OK (List<VendorResponse>)
+WrapperAPI --> ExperienceAPI: 200 OK
+ExperienceAPI --> ServiceBench: 200 OK
+
+== Get Vendor by Code ==
+ServiceBench -> ExperienceAPI: GET /vendors?vendorCode=XXX
+ExperienceAPI -> WrapperAPI: GET /vendors?vendorCode=XXX
+WrapperAPI -> VendorMaster: GET /api/vendor-master/vendors?vendorCode=XXX
+VendorMaster --> WrapperAPI: 200 OK (VendorResponse)
+WrapperAPI --> ExperienceAPI: 200 OK
+ExperienceAPI --> ServiceBench: 200 OK
+
+== Delete Vendor ==
+ServiceBench -> ExperienceAPI: DELETE /vendors?vendorCode=XXX
+ExperienceAPI -> WrapperAPI: DELETE /vendors?vendorCode=XXX
+WrapperAPI -> VendorMaster: DELETE /api/vendor-master/vendors?vendorCode=XXX
+note right: Audit logged before delete
+VendorMaster --> WrapperAPI: 204 No Content
+WrapperAPI --> ExperienceAPI: 204 No Content
+ExperienceAPI --> ServiceBench: 204 No Content
+
+== Create Vendor User ==
+ServiceBench -> ExperienceAPI: POST /vendor-users
+ExperienceAPI -> WrapperAPI: POST /vendor-users
+WrapperAPI -> VendorMaster: PUT /api/vendor-master/vendor-users
+VendorMaster --> WrapperAPI: 201 Created (VendorUserResponse)
+WrapperAPI --> ExperienceAPI: 201 Created
+ExperienceAPI --> ServiceBench: 201 Created
+
+== Update Vendor User ==
+ServiceBench -> ExperienceAPI: PUT /vendor-users
+ExperienceAPI -> WrapperAPI: PUT /vendor-users
+WrapperAPI -> VendorMaster: POST /api/vendor-master/vendor-users
+note right: Audit logged before update
+VendorMaster --> WrapperAPI: 200 OK (VendorUserResponse)
+WrapperAPI --> ExperienceAPI: 200 OK
+ExperienceAPI --> ServiceBench: 200 OK
+
+== Get All Vendor Users ==
+ServiceBench -> ExperienceAPI: GET /vendor-users
+ExperienceAPI -> WrapperAPI: GET /vendor-users
+WrapperAPI -> VendorMaster: GET /api/vendor-master/vendor-users
+VendorMaster --> WrapperAPI: 200 OK (List<VendorUserResponse>)
+WrapperAPI --> ExperienceAPI: 200 OK
+ExperienceAPI --> ServiceBench: 200 OK
+
+== Get Vendor User by ID ==
+ServiceBench -> ExperienceAPI: GET /vendor-users?vendorUserId=123
+ExperienceAPI -> WrapperAPI: GET /vendor-users?vendorUserId=123
+WrapperAPI -> VendorMaster: GET /api/vendor-master/vendor-users?vendorUserId=123
+VendorMaster --> WrapperAPI: 200 OK (VendorUserResponse)
+WrapperAPI --> ExperienceAPI: 200 OK
+ExperienceAPI --> ServiceBench: 200 OK
+
+== Delete Vendor User ==
+ServiceBench -> ExperienceAPI: DELETE /vendor-users?vendorUserId=123
+ExperienceAPI -> WrapperAPI: DELETE /vendor-users?vendorUserId=123
+WrapperAPI -> VendorMaster: DELETE /api/vendor-master/vendor-users?vendorUserId=123
+note right: Audit logged before delete
+VendorMaster --> WrapperAPI: 204 No Content
+WrapperAPI --> ExperienceAPI: 204 No Content
+ExperienceAPI --> ServiceBench: 204 No Content
+
+@enduml

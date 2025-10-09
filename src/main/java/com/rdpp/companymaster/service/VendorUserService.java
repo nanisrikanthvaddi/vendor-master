@@ -2,8 +2,10 @@ package com.rdpp.companymaster.service;
 
 import com.rdpp.companymaster.entity.Vendor;
 import com.rdpp.companymaster.entity.VendorUser;
+import com.rdpp.companymaster.entity.VendorUserAudit;
 import com.rdpp.companymaster.repository.VendorRepository;
 import com.rdpp.companymaster.repository.VendorUserRepository;
+import com.rdpp.companymaster.repository.VendorUserAuditRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,9 @@ public class VendorUserService {
 
     @Autowired
     private VendorRepository vendorRepository;
+
+    @Autowired
+    private VendorUserAuditRepository vendorUserAuditRepository;
 
     public VendorUser createVendorUser(VendorUser vendorUser, String vendorCode) {
         Vendor vendor = vendorRepository.findByVendorCode(vendorCode)
@@ -44,7 +49,7 @@ public class VendorUserService {
     }
 
     public List<VendorUser> getAllVendorUsers() {
-        return vendorUserRepository.findAll();
+        return vendorUserRepository.findByVendorUserStatus("A");
     }
 
     public Optional<VendorUser> getVendorUserById(Long vendorUserId) {
@@ -54,6 +59,10 @@ public class VendorUserService {
     public VendorUser updateVendorUser(Long vendorUserId, VendorUser vendorUserDetails) {
         VendorUser vendorUser = vendorUserRepository.findById(vendorUserId)
                 .orElseThrow(() -> new RuntimeException("Vendor User not found with id: " + vendorUserId));
+
+        // Save old state to audit table
+        VendorUserAudit audit = new VendorUserAudit(vendorUser, "update");
+        vendorUserAuditRepository.save(audit);
 
         vendorUser.setVendorUserName(vendorUserDetails.getVendorUserName());
         vendorUser.setVendorUserEmail(vendorUserDetails.getVendorUserEmail());
@@ -69,6 +78,11 @@ public class VendorUserService {
     public void deleteVendorUser(Long vendorUserId) {
         VendorUser vendorUser = vendorUserRepository.findById(vendorUserId)
                 .orElseThrow(() -> new RuntimeException("Vendor User not found with id: " + vendorUserId));
+
+        // Save old state to audit table
+        VendorUserAudit audit = new VendorUserAudit(vendorUser, "delete");
+        vendorUserAuditRepository.save(audit);
+
         vendorUserRepository.delete(vendorUser);
     }
 }

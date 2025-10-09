@@ -6,7 +6,7 @@
 |--------|----------|-------------|----------------------|----------------|-------------|
 | PUT | `/api/vendor-master/vendors` | Create Vendor | Yes | 201 Created | 102, 106 |
 | POST | `/api/vendor-master/vendors` | Update Vendor | Yes (with vendorCode) | 200 OK | 101, 106 |
-| GET | `/api/vendor-master/vendors` | Get All Vendors | No | 200 OK | 106 |
+| GET | `/api/vendor-master/vendors` | Get All Active Vendors (status=A) | No | 200 OK | 106 |
 | GET | `/api/vendor-master/vendors?vendorCode={code}` | Get Vendor by Code | No | 200 OK | 106 |
 | DELETE | `/api/vendor-master/vendors?vendorCode={code}` | Delete Vendor | No | 204 No Content | 106 |
 
@@ -16,9 +16,9 @@
 
 | Method | Endpoint | Description | Request Body Required | Success Status | Error Codes |
 |--------|----------|-------------|----------------------|----------------|-------------|
-| PUT | `/api/vendor-master/vendor-users` | Create Vendor User | Yes (with vendorId) | 201 Created | 103, 105, 106 |
+| PUT | `/api/vendor-master/vendor-users` | Create Vendor User | Yes (with vendorCode) | 201 Created | 103, 105, 106 |
 | POST | `/api/vendor-master/vendor-users` | Update Vendor User | Yes (with vendorUserId) | 200 OK | 104, 106 |
-| GET | `/api/vendor-master/vendor-users` | Get All Vendor Users | No | 200 OK | 106 |
+| GET | `/api/vendor-master/vendor-users` | Get All Active Vendor Users (status=A) | No | 200 OK | 106 |
 | GET | `/api/vendor-master/vendor-users?vendorUserId={id}` | Get Vendor User by ID | No | 200 OK | 106 |
 | DELETE | `/api/vendor-master/vendor-users?vendorUserId={id}` | Delete Vendor User | No | 204 No Content | 106 |
 
@@ -262,3 +262,5 @@
 | VendorCode Uniqueness | VendorCode must be unique across all vendors and is required for all Vendor operations |
 | VendorUser Parent Reference | **VendorUser uses vendorCode (not vendorId) to reference parent vendor** |
 | VendorId Usage | VendorId is auto-generated and only used internally; all external API operations use vendorCode |
+| Active Status Filter | **GET all Vendors returns only records with status = "A" (Active)** |
+| Active User Status Filter | **GET all VendorUsers returns only records with vendorUserStatus = "A" (Active)** |

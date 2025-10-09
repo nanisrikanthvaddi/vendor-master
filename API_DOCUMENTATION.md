@@ -126,8 +126,10 @@
 
 ---
 
-### 3. Get All Vendors
+### 3. Get All Active Vendors
 **Endpoint:** `GET /api/vendor-master/vendors`
+
+**Note:** Returns only vendors with status = "A" (Active)
 
 **Success Response (200 OK):**
 ```json
@@ -349,8 +351,10 @@
 
 ---
 
-### 3. Get All Vendor Users
+### 3. Get All Active Vendor Users
 **Endpoint:** `GET /api/vendor-master/vendor-users`
+
+**Note:** Returns only vendor users with vendorUserStatus = "A" (Active)
 
 **Success Response (200 OK):**
 ```json
@@ -497,3 +501,5 @@
 6. VendorCode must be unique and is required for all Vendor operations
 7. **VendorUser uses vendorCode (not vendorId) to reference the parent vendor**
 8. VendorId is auto-generated and only used internally; all external API operations use vendorCode
+9. **GET all Vendors returns only vendors with status = "A" (Active)**
+10. **GET all VendorUsers returns only vendor users with vendorUserStatus = "A" (Active)**

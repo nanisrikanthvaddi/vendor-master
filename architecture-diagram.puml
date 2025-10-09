@@ -1,0 +1,91 @@
+@startuml Vendor Master Architecture
+
+!define RECTANGLE class
+
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+' Define layers
+package "Service Bench" {
+    [Service Bench UI] as ServiceBench
+}
+
+package "Experience API Layer" {
+    [Experience API] as ExperienceAPI
+}
+
+package "Wrapper Process API Layer" {
+    [Wrapper Process API] as WrapperAPI
+}
+
+package "Vendor Master API" {
+
+    package "Controllers" {
+        [VendorController] as VendorCtrl
+        [VendorUserController] as VendorUserCtrl
+    }
+
+    package "Services" {
+        [VendorService] as VendorSvc
+        [VendorUserService] as VendorUserSvc
+    }
+
+    package "Repositories" {
+        [VendorRepository] as VendorRepo
+        [VendorUserRepository] as VendorUserRepo
+        [VendorAuditRepository] as VendorAuditRepo
+        [VendorUserAuditRepository] as VendorUserAuditRepo
+    }
+
+    package "Entities" {
+        [Vendor] as VendorEntity
+        [VendorUser] as VendorUserEntity
+        [VendorAudit] as VendorAuditEntity
+        [VendorUserAudit] as VendorUserAuditEntity
+    }
+}
+
+database "Oracle Database" {
+    folder "Tables" {
+        [VENDOR] as VendorTable
+        [VENDOR_USER] as VendorUserTable
+        [VENDOR_AUDIT] as VendorAuditTable
+        [VENDOR_USER_AUDIT] as VendorUserAuditTable
+    }
+}
+
+' Define relationships
+ServiceBench --> ExperienceAPI : HTTP Request
+ExperienceAPI --> WrapperAPI : HTTP Request
+WrapperAPI --> VendorCtrl : HTTP Request
+WrapperAPI --> VendorUserCtrl : HTTP Request
+
+VendorCtrl --> VendorSvc : Business Logic
+VendorUserCtrl --> VendorUserSvc : Business Logic
+
+VendorSvc --> VendorRepo : Data Access
+VendorSvc --> VendorAuditRepo : Audit Logging
+
+VendorUserSvc --> VendorUserRepo : Data Access
+VendorUserSvc --> VendorUserAuditRepo : Audit Logging
+
+VendorRepo --> VendorTable : CRUD Operations
+VendorUserRepo --> VendorUserTable : CRUD Operations
+VendorAuditRepo --> VendorAuditTable : Insert Audit
+VendorUserAuditRepo --> VendorUserAuditTable : Insert Audit
+
+note right of VendorSvc
+  Audit on Update/Delete
+  - Captures old state
+  - Saves to audit table
+  - Event Type: "update" or "delete"
+end note
+
+note right of VendorUserSvc
+  Audit on Update/Delete
+  - Captures old state
+  - Saves to audit table
+  - Event Type: "update" or "delete"
+end note
+
+@enduml

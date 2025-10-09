@@ -1,0 +1,101 @@
+@startuml Data Flow with Audit
+
+title Vendor Master - Complete Data Flow with Audit
+
+skinparam rectangleBackgroundColor<<layer1>> #E8F5E9
+skinparam rectangleBackgroundColor<<layer2>> #E3F2FD
+skinparam rectangleBackgroundColor<<layer3>> #FFF3E0
+skinparam rectangleBackgroundColor<<layer4>> #F3E5F5
+skinparam rectangleBackgroundColor<<layer5>> #FCE4EC
+
+rectangle "Service Bench\n(UI Layer)" <<layer1>> as SB
+rectangle "Experience API\n(Orchestration)" <<layer2>> as EA
+rectangle "Wrapper Process API\n(Process Layer)" <<layer3>> as WA
+
+rectangle "Vendor Master API" <<layer4>> {
+
+    rectangle "Controller Layer" as Controllers {
+        rectangle "VendorController\n- createVendor()\n- updateVendor()\n- deleteVendor()\n- getVendors()" as VC
+        rectangle "VendorUserController\n- createVendorUser()\n- updateVendorUser()\n- deleteVendorUser()\n- getVendorUsers()" as VUC
+    }
+
+    rectangle "Service Layer" as Services {
+        rectangle "VendorService\n- Business Logic\n- Audit Logging" as VS
+        rectangle "VendorUserService\n- Business Logic\n- Audit Logging\n- User Limit Check" as VUS
+    }
+
+    rectangle "Repository Layer" as Repositories {
+        rectangle "VendorRepository" as VR
+        rectangle "VendorUserRepository" as VUR
+        rectangle "VendorAuditRepository" as VAR
+        rectangle "VendorUserAuditRepository" as VUAR
+    }
+}
+
+database "Oracle Database" <<layer5>> {
+    storage "Main Tables" {
+        [VENDOR]
+        [VENDOR_USER]
+    }
+    storage "Audit Tables" {
+        [VENDOR_AUDIT]
+        [VENDOR_USER_AUDIT]
+    }
+}
+
+' Request Flow
+SB -down-> EA : HTTP Request
+EA -down-> WA : HTTP Request
+WA -down-> Controllers : REST API Call
+
+' Controller to Service
+VC -down-> VS : Delegate
+VUC -down-> VUS : Delegate
+
+' Service to Repository
+VS -down-> VR : CRUD Operations
+VS -down-> VAR : Audit Insert\n(on update/delete)
+
+VUS -down-> VUR : CRUD Operations
+VUS -down-> VUAR : Audit Insert\n(on update/delete)
+
+' Repository to Database
+VR -down-> [VENDOR] : JPA Operations
+VUR -down-> [VENDOR_USER] : JPA Operations
+VAR -down-> [VENDOR_AUDIT] : Insert Only
+VUAR -down-> [VENDOR_USER_AUDIT] : Insert Only
+
+note right of VS
+  **Audit Logic:**
+  Before Update/Delete:
+  1. Fetch existing entity
+  2. Create audit record with old values
+  3. Set event_type = "update" or "delete"
+  4. Save to audit table
+  5. Perform update/delete operation
+end note
+
+note right of VUS
+  **User Limit Check:**
+  Before Create:
+  1. Get vendor by code
+  2. Count existing users by role
+  3. Check against max limits:
+     - Role 'A': maxAdminUsers
+     - Role 'U': maxNormalUsers
+  4. Throw error if limit reached
+end note
+
+note bottom of [VENDOR_AUDIT]
+  Stores historical snapshots
+  of vendor records before
+  updates and deletes
+end note
+
+note bottom of [VENDOR_USER_AUDIT]
+  Stores historical snapshots
+  of vendor user records before
+  updates and deletes
+end note
+
+@enduml

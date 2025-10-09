@@ -59,6 +59,7 @@ public class VendorUserController {
         }
     }
 
+
     @GetMapping
     public ResponseEntity<?> getAllVendorUsers() {
         try {
@@ -93,7 +94,7 @@ public class VendorUserController {
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            ErrorResponse errorResponse = new ErrorResponse(106, "unable to process");
+            ErrorResponse errorResponse = new ErrorResponse(107, "unable to delete");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }

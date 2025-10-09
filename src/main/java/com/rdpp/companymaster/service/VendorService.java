@@ -1,7 +1,9 @@
 package com.rdpp.companymaster.service;
 
 import com.rdpp.companymaster.entity.Vendor;
+import com.rdpp.companymaster.entity.VendorAudit;
 import com.rdpp.companymaster.repository.VendorRepository;
+import com.rdpp.companymaster.repository.VendorAuditRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,12 +18,15 @@ public class VendorService {
     @Autowired
     private VendorRepository vendorRepository;
 
+    @Autowired
+    private VendorAuditRepository vendorAuditRepository;
+
     public Vendor createVendor(Vendor vendor) {
         return vendorRepository.save(vendor);
     }
 
     public List<Vendor> getAllVendors() {
-        return vendorRepository.findAll();
+        return vendorRepository.findByStatus("A");
     }
 
     public Optional<Vendor> getVendorById(Long vendorId) {
@@ -35,6 +40,10 @@ public class VendorService {
     public Vendor updateVendor(Long vendorId, Vendor vendorDetails) {
         Vendor vendor = vendorRepository.findById(vendorId)
                 .orElseThrow(() -> new RuntimeException("Vendor not found with id: " + vendorId));
+
+        // Save old state to audit table
+        VendorAudit audit = new VendorAudit(vendor, "update");
+        vendorAuditRepository.save(audit);
 
         vendor.setVendorCode(vendorDetails.getVendorCode());
         vendor.setVendorType(vendorDetails.getVendorType());
@@ -56,6 +65,10 @@ public class VendorService {
         Vendor vendor = vendorRepository.findByVendorCode(vendorCode)
                 .orElseThrow(() -> new RuntimeException("Vendor not found with code: " + vendorCode));
 
+        // Save old state to audit table
+        VendorAudit audit = new VendorAudit(vendor, "update");
+        vendorAuditRepository.save(audit);
+
         vendor.setVendorType(vendorDetails.getVendorType());
         vendor.setVendorName(vendorDetails.getVendorName());
         vendor.setVendorDomain(vendorDetails.getVendorDomain());
@@ -74,12 +87,22 @@ public class VendorService {
     public void deleteVendor(Long vendorId) {
         Vendor vendor = vendorRepository.findById(vendorId)
                 .orElseThrow(() -> new RuntimeException("Vendor not found with id: " + vendorId));
+
+        // Save old state to audit table
+        VendorAudit audit = new VendorAudit(vendor, "delete");
+        vendorAuditRepository.save(audit);
+
         vendorRepository.delete(vendor);
     }
 
     public void deleteVendorByCode(String vendorCode) {
         Vendor vendor = vendorRepository.findByVendorCode(vendorCode)
                 .orElseThrow(() -> new RuntimeException("Vendor not found with code: " + vendorCode));
+
+        // Save old state to audit table
+        VendorAudit audit = new VendorAudit(vendor, "delete");
+        vendorAuditRepository.save(audit);
+
         vendorRepository.delete(vendor);
     }
 }
